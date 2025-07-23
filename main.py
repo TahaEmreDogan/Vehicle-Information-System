@@ -1,163 +1,13 @@
+# main.py
+
 import tkinter as tk
 from tkinter import messagebox
-import psycopg2
-from psycopg2 import Error
-
-class Vehicle:
-    def __init__(self, id, plate, brand, model, status, vehicle_type):
-        self.id = id
-        self.plate = plate
-        self.brand = brand
-        self.model = model
-        self.status = status
-        self.vehicle_type = vehicle_type
-
-    def details(self):
-        return (f"Id: {self.id}\nPlate: {self.plate}\nBrand: {self.brand}\n"
-                f"Model: {self.model}\nStatus: {self.status}\nVehicle Type: {self.vehicle_type}")
-
-def db_connect():
-    return psycopg2.connect(
-        user="postgres",
-        password="12345",
-        host="localhost",
-        port="5432",
-        database="plakasorgu"
-    )
-
-def add_vehicle_to_db(id, plate, brand, model, status, vehicle_type):
-    connection = None
-    cursor = None
-    try:
-        connection = db_connect()
-        cursor = connection.cursor()
-        insert_query = """
-            INSERT INTO vehicles (id, plate, brand, model, status, vehicle_type)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        record_to_insert = (id, plate, brand, model, status, vehicle_type)
-        cursor.execute(insert_query, record_to_insert)
-        connection.commit()
-        return True
-    except (Exception, Error) as error:
-        messagebox.showerror("Database Error", f"Error: {error}")
-        return False
-    finally:
-        if cursor: cursor.close()
-        if connection: connection.close()
-
-def check_plate_in_db(plate):
-    connection = None
-    cursor = None
-    try:
-        connection = db_connect()
-        cursor = connection.cursor()
-        select_query = "SELECT id, plate, brand, model, status, vehicle_type FROM vehicles WHERE plate = %s"
-        cursor.execute(select_query, (plate,))
-        record = cursor.fetchone()
-        return record
-    except (Exception, Error) as error:
-        messagebox.showerror("Database Error", f"Error: {error}")
-        return None
-    finally:
-        if cursor: cursor.close()
-        if connection: connection.close()
-
-# YENİ: Belirli bir aracın muayene kayıtlarını getir
-def get_inspections_by_vehicle_id(vehicle_id):
-    connection = None
-    cursor = None
-    try:
-        connection = db_connect()
-        cursor = connection.cursor()
-        select_query = """
-            SELECT inspection_type, inspection_date, inspection_price, inspection_result,
-                   next_inspection_date, inspection_personnel, inspection_description
-            FROM inspections
-            WHERE vehicle_id = %s
-        """
-        cursor.execute(select_query, (vehicle_id,))
-        records = cursor.fetchall()
-        return records
-    except (Exception, Error) as error:
-        messagebox.showerror("Database Error", f"Error: {error}")
-        return []
-    finally:
-        if cursor: cursor.close()
-        if connection: connection.close()
-
-def add_inspection_to_db(vehicle_id, inspection_type, inspection_date, inspection_price, inspection_result, next_inspection_date, inspection_personnel, inspection_description):
-    connection = None
-    cursor = None
-    try:
-        connection = db_connect()
-        cursor = connection.cursor()
-        insert_query = """
-            INSERT INTO inspections (
-                vehicle_id,
-                inspection_type,
-                inspection_date,
-                inspection_price,
-                inspection_result,
-                next_inspection_date,
-                inspection_personnel,
-                inspection_description
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_query, (
-            vehicle_id,
-            inspection_type,
-            inspection_date,
-            inspection_price,
-            inspection_result,
-            next_inspection_date,
-            inspection_personnel,
-            inspection_description
-        ))
-        connection.commit()
-        return True
-    except (Exception, Error) as error:
-        messagebox.showerror("Database Error", f"Error: {error}")
-        return False
-    finally:
-        if cursor: cursor.close()
-        if connection: connection.close()
-
-def update_inspection_in_db(vehicle_id, inspection_type, inspection_date, inspection_price, inspection_result, next_inspection_date, inspection_personnel, inspection_description):
-    connection = None
-    cursor = None
-    try:
-        connection = db_connect()
-        cursor = connection.cursor()
-        update_query = """
-            UPDATE inspections SET
-                inspection_type = %s,
-                inspection_date = %s,
-                inspection_price = %s,
-                inspection_result = %s,
-                next_inspection_date = %s,
-                inspection_personnel = %s,
-                inspection_description = %s
-            WHERE vehicle_id = %s
-        """
-        cursor.execute(update_query, (
-            inspection_type,
-            inspection_date,
-            inspection_price,
-            inspection_result,
-            next_inspection_date,
-            inspection_personnel,
-            inspection_description,
-            vehicle_id
-        ))
-        connection.commit()
-        return True
-    except (Exception, Error) as error:
-        messagebox.showerror("Database Error", f"Error: {error}")
-        return False
-    finally:
-        if cursor: cursor.close()
-        if connection: connection.close()
+from db import (
+    add_vehicle_to_db, check_plate_in_db, get_inspections_by_vehicle_id,
+    add_inspection_to_db, update_inspection_in_db
+)
+from vehicle import Vehicle
+# from inspection import Inspection  # Eğer Inspection class’ını kullanmak istersen aç
 
 class MainApp(tk.Tk):
     def __init__(self):
@@ -168,7 +18,7 @@ class MainApp(tk.Tk):
         self.create_widgets()
 
     def create_widgets(self):
-        # Araç Ekleme
+        # Araç ekleme alanı
         tk.Label(self, text="Araç Ekle", font=("Arial", 12, "bold")).pack(pady=5)
         self.entries = {}
         fields = ["id", "plate", "brand", "model", "status", "vehicle_type"]
@@ -179,10 +29,9 @@ class MainApp(tk.Tk):
             entry = tk.Entry(frame, width=28)
             entry.pack(side=tk.LEFT)
             self.entries[field] = entry
-
         tk.Button(self, text="Aracı Ekle", command=self.add_vehicle).pack(pady=6)
 
-        # Plaka Sorgulama
+        # Plaka sorgulama alanı
         tk.Label(self, text="Plaka Sorgula", font=("Arial", 12, "bold")).pack(pady=5)
         self.plate_query = tk.Entry(self, width=20)
         self.plate_query.pack()
@@ -191,7 +40,7 @@ class MainApp(tk.Tk):
         self.result_text = tk.Text(self, width=65, height=15, font=("Arial", 11), state='disabled')
         self.result_text.pack(pady=5)
 
-        # Muayene Bilgisi Ekleme
+        # Muayene Bilgisi Ekle/Güncelle alanı
         tk.Label(self, text="Muayene Bilgisi Ekle / Güncelle", font=("Arial", 12, "bold")).pack(pady=5)
         self.inspection_entries = {}
         inspection_fields = [
@@ -234,8 +83,6 @@ class MainApp(tk.Tk):
         if record:
             vehicle = Vehicle(*record)
             self.result_text.insert(tk.END, vehicle.details() + "\n\n")
-
-            # Muayene bilgilerini getir ve göster
             inspections = get_inspections_by_vehicle_id(vehicle.id)
             if inspections:
                 self.result_text.insert(tk.END, "Muayene Bilgileri:\n")
