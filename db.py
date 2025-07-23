@@ -61,7 +61,7 @@ def get_inspections_by_vehicle_id(vehicle_id):
         """
         cursor.execute(select_query, (vehicle_id,))
         records = cursor.fetchall()
-        print(f"Muayene sorgusu sonucu: {records}")  # Kontrol için!
+        print(f"Muayene sorgusu sonucu: {records}")
         return records
     except (Exception, Error) as error:
         print("Database Error:", error)
@@ -164,6 +164,23 @@ def add_insurance_by_vehicle_id(vehicle_id, insurance_type, insurance_company, p
         connection.commit()
         return True
     except (Exception, Error) as error:
+        print("Database Error:", error)
+        return False
+    finally:
+        if cursor: cursor.close()
+        if connection: connection.close()
+
+def admin_login(admin_name, admin_password):
+    connection = None
+    cursor = None
+    try:
+        connection = db_connect()
+        cursor = connection.cursor()
+        query = "SELECT admin_name, admin_password FROM admin WHERE admin_name = %s AND admin_password = %s"
+        cursor.execute(query, (admin_name.strip(), admin_password.strip()))
+        result = cursor.fetchone()
+        return result is not None
+    except Exception as error:
         print("Database Error:", error)
         return False
     finally:
