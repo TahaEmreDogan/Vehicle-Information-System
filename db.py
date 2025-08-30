@@ -10,17 +10,17 @@ def db_connect():
         database="plakasorgu"     
     )
 
-def add_vehicle_to_db(id, plate, brand, model, status, vehicle_type):
+def add_vehicle_to_db(plate, brand, model, status, vehicle_type):
     connection = None
     cursor = None
     try:
         connection = db_connect()
         cursor = connection.cursor()
         insert_query = """
-            INSERT INTO vehicles (id, plate, brand, model, status, vehicle_type)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO vehicles (plate, brand, model, status, vehicle_type)
+            VALUES (%s, %s, %s, %s, %s)
         """
-        cursor.execute(insert_query, (id, plate, brand, model, status, vehicle_type))
+        cursor.execute(insert_query, (plate, brand, model, status, vehicle_type))
         connection.commit()
         return True
     except (Exception, Error) as error:

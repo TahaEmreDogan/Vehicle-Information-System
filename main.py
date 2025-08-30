@@ -9,10 +9,10 @@ from vehicle import Vehicle
 from inspection import Inspection
 from insurance import Insurance
 
-# Renk paleti
-BG_COLOR = "#f4f6fb"         # Açık mavi-gri
-FRAME_BG = "#e9eaf6"        # Kutular için daha koyu açık mavi
-BUTTON_BG = "#4a6fa5"       # Mavi
+
+BG_COLOR = "#f4f6fb"         
+FRAME_BG = "#e9eaf6"        
+BUTTON_BG = "#4a6fa5"       
 BUTTON_FG = "#fff"
 LABEL_FG = "#22223b"
 RESULT_BG = "#fff"
@@ -55,7 +55,7 @@ class MainApp(tk.Tk):
         self.resizable(False, False)
         self.configure(bg=BG_COLOR)
         self.is_admin_logged_in = False
-        # İkonları yükle
+        
         self.icon_arac = tk.PhotoImage(file="arac.png")
         self.icon_muayene = tk.PhotoImage(file="muayene.png")
         self.icon_sigorta = tk.PhotoImage(file="sigorta.png")
@@ -76,7 +76,7 @@ class MainApp(tk.Tk):
         self.admin_login_btn.pack(side=tk.LEFT)
 
         tk.Label(self, text="Plaka Sorgula", font=FONT_HEADER, bg=BG_COLOR, fg=LABEL_FG).pack(pady=10)
-        # Plaka sorgu kutusu ve büyüteç ikonunu bir frame içinde hizala
+        
         plate_frame = tk.Frame(self, bg=BG_COLOR)
         plate_frame.pack(pady=2)
         try:
@@ -110,7 +110,7 @@ class MainApp(tk.Tk):
         container = tk.Frame(self.admin_area, bg=BG_COLOR)
         container.pack()
 
-        # Araç Ekle
+        
         vehicle_frame = tk.Frame(container, bg=FRAME_BG, bd=2, relief="groove")
         vehicle_frame.pack(side=tk.LEFT, padx=20, pady=5, fill='y')
         vehicle_header = tk.Frame(vehicle_frame, bg=FRAME_BG)
@@ -119,7 +119,7 @@ class MainApp(tk.Tk):
         tk.Label(vehicle_header, text="Araç Ekle", font=("Arial", 12, "bold"), bg=FRAME_BG, fg=LABEL_FG).pack(side=tk.LEFT)
 
         self.entries = {}
-        fields = ["id", "plate", "brand", "model", "status", "vehicle_type"]
+        fields = ["plate", "brand", "model", "status", "vehicle_type"]
         for field in fields:
             frame = tk.Frame(vehicle_frame, bg=FRAME_BG)
             frame.pack(pady=1, anchor="w")
@@ -129,7 +129,7 @@ class MainApp(tk.Tk):
             self.entries[field] = entry
         tk.Button(vehicle_frame, text="Aracı Ekle", command=self.add_vehicle, width=20, bg=BUTTON_BG, fg=BUTTON_FG, font=FONT_LABEL, activebackground="#35507a").pack(pady=7)
 
-        # Muayene Bilgisi
+        
         inspection_frame = tk.Frame(container, bg=FRAME_BG, bd=2, relief="groove")
         inspection_frame.pack(side=tk.LEFT, padx=20, pady=5, fill='y')
         inspection_header = tk.Frame(inspection_frame, bg=FRAME_BG)
@@ -154,7 +154,7 @@ class MainApp(tk.Tk):
         tk.Button(button_frame, text="Muayene Ekle", command=self.add_inspection, width=15, bg=BUTTON_BG, fg=BUTTON_FG, font=FONT_LABEL, activebackground="#35507a").pack(side=tk.LEFT, padx=5)
         tk.Button(button_frame, text="Muayene Güncelle", command=self.update_inspection, width=15, bg=BUTTON_BG, fg=BUTTON_FG, font=FONT_LABEL, activebackground="#35507a").pack(side=tk.LEFT, padx=5)
 
-        # Sigorta
+        
         insurance_frame = tk.Frame(container, bg=FRAME_BG, bd=2, relief="groove")
         insurance_frame.pack(side=tk.LEFT, padx=20, pady=5, fill='y')
         insurance_header = tk.Frame(insurance_frame, bg=FRAME_BG)
@@ -193,13 +193,17 @@ class MainApp(tk.Tk):
 
     def add_vehicle(self):
         try:
-            id = int(self.entries["id"].get())
-            plate = self.entries["plate"].get()
-            brand = self.entries["brand"].get()
-            model = self.entries["model"].get()
-            status = self.entries["status"].get()
-            vehicle_type = self.entries["vehicle_type"].get()
-            if add_vehicle_to_db(id, plate, brand, model, status, vehicle_type):
+            plate = self.entries["plate"].get().strip()
+            brand = self.entries["brand"].get().strip()
+            model = self.entries["model"].get().strip()
+            status = self.entries["status"].get().strip()
+            vehicle_type = self.entries["vehicle_type"].get().strip()
+
+            if not all([plate, brand, model, status, vehicle_type]):
+                messagebox.showerror("Hata", "Lütfen tüm alanları doldurun!")
+                return
+
+            if add_vehicle_to_db(plate, brand, model, status, vehicle_type):
                 messagebox.showinfo("Başarılı", "Araç başarıyla eklendi.")
                 for entry in self.entries.values():
                     entry.delete(0, tk.END)
