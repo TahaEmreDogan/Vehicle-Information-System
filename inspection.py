@@ -11,12 +11,12 @@ class Inspection:
 
     def details(self):
         return (
-            f"Vehicle Id : {self.vehicle_id}\n"
-            f"Inspection Type : {self.inspection_type}\n"
-            f"Inspection Date : {self.inspection_date}\n"
-            f"Inspection Price : {self.inspection_price}\n"
-            f"Inspection Result : {self.inspection_result}\n"
-            f"Next Inspection Date : {self.next_inspection_date}\n"
-            f"Inspection Personnel : {self.inspection_personnel}\n"
-            f"Inspection Description : {self.inspection_description}\n"
+            f"Vehicle Id: {self.vehicle_id}\n"
+            f"Inspection Type: {self.inspection_type}\n"
+            f"Inspection Date: {self.inspection_date}\n"
+            f"Inspection Price: {self.inspection_price}\n"
+            f"Inspection Result: {self.inspection_result}\n"
+            f"Next Inspection Date: {self.next_inspection_date}\n"
+            f"Inspection Personnel: {self.inspection_personnel}\n"
+            f"Inspection Description: {self.inspection_description}\n"
         )
